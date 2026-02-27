@@ -4,7 +4,7 @@ from graph_agent import run_agent
 st.set_page_config(page_title="Multi Tool AI", page_icon="🤖")
 
 st.title("🤖 Multi-Tool AI Assistant")
-# st.write("Calculator • Weather • Wikipedia")
+st.write("Calculator • Weather • Wikipedia")
 
 # Store chat history
 if "messages" not in st.session_state:
@@ -17,7 +17,6 @@ for msg in st.session_state.messages:
 
 # User input box
 if prompt := st.chat_input("Ask something..."):
-
     # Add user message to history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
