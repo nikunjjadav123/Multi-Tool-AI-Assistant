@@ -2,8 +2,10 @@ import wikipedia
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 
+
 class WikipediaSearchInput(BaseModel):
     query: str = Field(description="Topic to search on Wikipedia")
+
 
 @tool(args_schema=WikipediaSearchInput)
 def wikipedia_search(query: str) -> str:

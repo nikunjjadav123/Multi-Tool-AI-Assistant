@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def get_database():
     uri = os.getenv("MONGO_URI")
     db_name = os.getenv("MONGO_DB")

@@ -1,8 +1,8 @@
 import re
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
-from datetime import datetime
 from rapidfuzz import fuzz
+
 
 def is_datetime_query(query: str) -> bool:
     keywords = ["time now", "current time", "time in"]
@@ -31,13 +31,11 @@ def extract_location(query: str):
 tf = TimezoneFinder()
 geolocator = Nominatim(user_agent="timezone_app")
 
+
 def city_to_timezone(city_name):
     location = geolocator.geocode(city_name)
     if not location:
         return None
 
-    tz = tf.timezone_at(
-        lng=location.longitude,
-        lat=location.latitude
-    )
+    tz = tf.timezone_at(lng=location.longitude, lat=location.latitude)
     return tz

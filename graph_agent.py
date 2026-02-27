@@ -1,5 +1,5 @@
 import os
-from typing import TypedDict,List
+from typing import TypedDict, List
 from langgraph.graph import StateGraph, END
 from tools.weather_tool import get_current_weather
 from tools.wikipedia_tools import wikipedia_search
@@ -12,24 +12,25 @@ from prompts import CALCULATOR_PROMPT
 from langchain_groq import ChatGroq
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from memory.mongo_memory import get_mongo_checkpointer
-from langchain_core.messages import BaseMessage,HumanMessage, AIMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from utils.date_time_expression import extract_location
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 llm = ChatGroq(
-        model_name=os.getenv("LLM_MODEL"),
-        temperature=os.getenv("TEMPERATURE"),
-        streaming=False,
-        callbacks=[StreamingStdOutCallbackHandler()]
-    )
-
+    model_name=os.getenv("LLM_MODEL"),
+    temperature=os.getenv("TEMPERATURE"),
+    streaming=False,
+    callbacks=[StreamingStdOutCallbackHandler()],
+)
 
 
 # -------------------------
 # State
 # -------------------------
+
 
 class AgentState(TypedDict):
     history: List[BaseMessage]
@@ -41,9 +42,10 @@ class AgentState(TypedDict):
 # Router Node
 # -------------------------
 
+
 def router(state: AgentState):
     query = state["user_input"].lower()
- # Personal / conversational questions
+    # Personal / conversational questions
 
     if any(word in query for word in ["my name", "who am i", "what is my name"]):
         return "chat_node"
@@ -55,7 +57,7 @@ def router(state: AgentState):
         return "datetime_node"
     if is_math(query):
         return "math_node"
-        
+
     return "wiki_node"
 
 
@@ -63,39 +65,32 @@ def chat_node(state: AgentState):
 
     history = state.get("history", [])
 
-    history.append({
-        "role": "user",
-        "content": state["user_input"]
-    })
+    history.append({"role": "user", "content": state["user_input"]})
 
     response = llm.invoke(history)
 
-    history.append({
-        "role": "assistant",
-        "content": response.content
-    })
+    history.append({"role": "assistant", "content": response.content})
 
-    return {
-        "history": history,
-        "result": response.content
-    }
+    return {"history": history, "result": response.content}
+
+
 # -------------------------
 # Tool Nodes
 # -------------------------
 
+
 def weather_node(state: AgentState):
-    
+
     print("Weather Node Executing...")
 
     extract = llm.invoke(
         f"Extract only the city name from this sentence: {state['user_input']}. "
     )
-    
+
     city = extract.content.strip()
     raw_weather = get_current_weather.invoke({"city": city})
-    
-    formatted = llm.invoke(
-    f"""
+
+    formatted = llm.invoke(f"""
     Convert the following weather data into ONE short single-line weather report.
 
     Return ONLY the sentence.
@@ -104,18 +99,17 @@ def weather_node(state: AgentState):
 
     Weather Data:
     {raw_weather}
-    """
-    )
+    """)
 
     return {"result": formatted.content}
+
 
 def datetime_node(state: AgentState):
 
     location = extract_location(state["user_input"])
     result = get_current_datetime.invoke({"location": location})
 
-    formatted = llm.invoke(
-        f"""
+    formatted = llm.invoke(f"""
         Convert the following datetime data into ONE short single-line date-time report.
 
         Return ONLY the sentence.
@@ -124,9 +118,9 @@ def datetime_node(state: AgentState):
 
         User Input: {state["user_input"]}
         Result: {result}
-    """
-    )
+    """)
     return {"result": formatted.content}
+
 
 def wiki_node(state: AgentState):
     result = wikipedia_search.invoke({"query": state["user_input"]})
@@ -135,10 +129,7 @@ def wiki_node(state: AgentState):
 
 def news_node(state: AgentState):
 
-    result = news_search.invoke({
-        "query": state["user_input"],
-        "topic": "news"
-    })
+    result = news_search.invoke({"query": state["user_input"], "topic": "news"})
 
     articles = result.get("results", [])
 
@@ -149,8 +140,7 @@ def news_node(state: AgentState):
 
     for article in articles[:3]:
         formatted.append(
-            f"📰 {article.get('title','No title')}\n"
-            f"🔗 {article.get('url','')}"
+            f"📰 {article.get('title','No title')}\n" f"🔗 {article.get('url','')}"
         )
 
     return {"result": "\n\n".join(formatted)}
@@ -161,11 +151,8 @@ def math_node(state: AgentState):
     if not expr:
         return {"result": "Sorry, I could not understand the math expression."}
     raw_result = calculator.invoke({"expression": expr})
-    
-    prompt_text = CALCULATOR_PROMPT.format(
-        expr=expr,
-        result= str(raw_result)
-    )
+
+    prompt_text = CALCULATOR_PROMPT.format(expr=expr, result=str(raw_result))
 
     formatted = llm.invoke(prompt_text)
     return {"result": formatted.content}
@@ -195,9 +182,7 @@ builder.add_edge("datetime_node", END)
 
 checkpointer = get_mongo_checkpointer()
 
-graph = builder.compile(
-    checkpointer=checkpointer
-)
+graph = builder.compile(checkpointer=checkpointer)
 
 # -------------------------
 # Run Function
@@ -206,9 +191,6 @@ graph = builder.compile(
 
 def run_agent(user_input: str):
     result = graph.invoke(
-        {"user_input": user_input},
-        config={
-            "configurable": {"thread_id": "user_1"}
-        }
+        {"user_input": user_input}, config={"configurable": {"thread_id": "user_1"}}
     )
     return result["result"]

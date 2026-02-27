@@ -1,5 +1,5 @@
 from langchain_tavily import TavilySearch
-from langchain.tools import tool    
+from langchain.tools import tool
 
 # @tool
 # def general_search(query:str):
@@ -11,11 +11,9 @@ from langchain.tools import tool
 #         topic="general"
 #     ).run(query)
 
+
 @tool
-def news_search(query:str):
+def news_search(query: str):
     """Search for news"""
     print("News Search tool loaded")
-    return TavilySearch(
-        max_results=5,
-        topic="news"
-    ).run(query)
+    return TavilySearch(max_results=5, topic="news").run(query)

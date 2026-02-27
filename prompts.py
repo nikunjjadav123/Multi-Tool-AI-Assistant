@@ -27,7 +27,6 @@ Latest India election news → tavily_search
 """
 
 
-
 CALCULATOR_PROMPT = """
 Return a response in ONE SHORT SENTENCE.
 

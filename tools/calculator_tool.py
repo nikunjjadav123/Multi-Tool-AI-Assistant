@@ -12,7 +12,7 @@ def calculator(expression: str) -> str:
     """Evaluate math expression safely"""
 
     print("Calculator Tool Executed")
-    
+
     allowed_names = {
         "pi": math.pi,
         "e": math.e,

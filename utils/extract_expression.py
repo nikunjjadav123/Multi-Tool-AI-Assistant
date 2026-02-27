@@ -1,12 +1,14 @@
-import re
 import ast
+import re
+
 
 def is_valid_expression(expr):
     try:
         ast.parse(expr)
         return True
-    except:
+    except Exception:
         return False
+
 
 def extract_expression(text: str) -> str:
     text = text.lower().strip()
@@ -55,8 +57,7 @@ def extract_expression(text: str) -> str:
     # --------------------------------
     # Square root
     # --------------------------------
-    text = re.sub(r"(square root of|square root|sqrt)\s+(\d+\.?\d*)",
-                  r"sqrt(\2)", text)
+    text = re.sub(r"(square root of|square root|sqrt)\s+(\d+\.?\d*)", r"sqrt(\2)", text)
 
     # --------------------------------
     # Logarithms
@@ -69,18 +70,10 @@ def extract_expression(text: str) -> str:
     # --------------------------------
     # Trigonometry (convert degrees → radians)
     # --------------------------------
-    text = re.sub(
-        r"(sin|cos|tan)\s+(\d+\.?\d*)\s*degrees?",
-        r"\1(radians(\2))",
-        text
-    )
+    text = re.sub(r"(sin|cos|tan)\s+(\d+\.?\d*)\s*degrees?", r"\1(radians(\2))", text)
 
     # If trig without degrees, assume degrees (human behavior)
-    text = re.sub(
-        r"\b(sin|cos|tan)\s+(\d+\.?\d*)",
-        r"\1(radians(\2))",
-        text
-    )
+    text = re.sub(r"\b(sin|cos|tan)\s+(\d+\.?\d*)", r"\1(radians(\2))", text)
 
     # --------------------------------
     # Arithmetic word conversion
@@ -113,57 +106,92 @@ def is_math(query: str) -> bool:
         return True
 
     math_words = [
-
-            # Basic arithmetic
-            "add", "sum", "plus", "minus", "subtract",
-            "multiply", "product", "divide", "division",
-            "times", "mod", "modulo", "remainder",
-
-            # Powers & roots
-            "power", "raised to", "square", "cube",
-            "sqrt", "square root", "cube root",
-
-            # Logs & exponential
-            "log", "log10", "ln", "exponential", "exp",
-
-            # Trigonometry
-            "sin", "cos", "tan",
-            "asin", "acos", "atan",
-            "radians", "degrees",
-            "trigonometry",
-
-            # Constants
-            "pi", "e",
-
-            # Factorial & number theory
-            "factorial", "gcd", "lcm",
-
-            # Geometry 2D
-            "area", "perimeter", "circumference",
-            "circle", "radius", "diameter",
-            "square", "rectangle", "triangle",
-            "trapezium", "parallelogram",
-            "base", "height", "side",
-
-            # Geometry 3D
-            "volume", "surface area",
-            "sphere", "cylinder", "cone",
-            "cube", "cuboid",
-
-            # Advanced
-            "hypotenuse",
-            "pythagoras",
-            "geometry",
-            "math",
-            "calculate",
-            "compute",
-        ]
+        # Basic arithmetic
+        "add",
+        "sum",
+        "plus",
+        "minus",
+        "subtract",
+        "multiply",
+        "product",
+        "divide",
+        "division",
+        "times",
+        "mod",
+        "modulo",
+        "remainder",
+        # Powers & roots
+        "power",
+        "raised to",
+        "square",
+        "cube",
+        "sqrt",
+        "square root",
+        "cube root",
+        # Logs & exponential
+        "log",
+        "log10",
+        "ln",
+        "exponential",
+        "exp",
+        # Trigonometry
+        "sin",
+        "cos",
+        "tan",
+        "asin",
+        "acos",
+        "atan",
+        "radians",
+        "degrees",
+        "trigonometry",
+        # Constants
+        "pi",
+        "e",
+        # Factorial & number theory
+        "factorial",
+        "gcd",
+        "lcm",
+        # Geometry 2D
+        "area",
+        "perimeter",
+        "circumference",
+        "circle",
+        "radius",
+        "diameter",
+        "square",
+        "rectangle",
+        "triangle",
+        "trapezium",
+        "parallelogram",
+        "base",
+        "height",
+        "side",
+        # Geometry 3D
+        "volume",
+        "surface area",
+        "sphere",
+        "cylinder",
+        "cone",
+        "cube",
+        "cuboid",
+        # Advanced
+        "hypotenuse",
+        "pythagoras",
+        "geometry",
+        "math",
+        "calculate",
+        "compute",
+    ]
 
     if any(word in query for word in math_words) and re.search(r"\d", query):
         return True
 
-    return False 
-    
-# 0-9 any numbers + - * / () any math operators \- because it is only - special character in regex so we need to escape
+    return False
 
-# [0-9+\-*/()] => This is character regex means it checks the query contains a calculation intent like "calculate 10/2 please"
+
+# 0-9: numbers
+# + - * / (): math operators
+# '-' must be escaped in regex because it is special inside character classes
+
+# Regex: [0-9+\-*/()]
+# Matches calculation intent like "calculate 10/2 please"
