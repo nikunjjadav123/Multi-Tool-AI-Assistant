@@ -25,7 +25,7 @@ def wikipedia_search(query: str) -> str:
             try:
                 page = wikipedia.page(title, auto_suggest=True)
                 return wikipedia.summary(page.title, sentences=3)
-            except:
+            except Exception:
                 continue
 
         return "Could not retrieve a valid Wikipedia page."

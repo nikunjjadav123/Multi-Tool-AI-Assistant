@@ -12,7 +12,7 @@ from prompts import CALCULATOR_PROMPT
 from langchain_groq import ChatGroq
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from memory.mongo_memory import get_mongo_checkpointer
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.messages import BaseMessage
 from utils.date_time_expression import extract_location
 
 from dotenv import load_dotenv
@@ -62,7 +62,6 @@ def router(state: AgentState):
 
 
 def chat_node(state: AgentState):
-
     history = state.get("history", [])
 
     history.append({"role": "user", "content": state["user_input"]})
@@ -80,7 +79,6 @@ def chat_node(state: AgentState):
 
 
 def weather_node(state: AgentState):
-
     print("Weather Node Executing...")
 
     extract = llm.invoke(
@@ -90,7 +88,8 @@ def weather_node(state: AgentState):
     city = extract.content.strip()
     raw_weather = get_current_weather.invoke({"city": city})
 
-    formatted = llm.invoke(f"""
+    formatted = llm.invoke(
+        f"""
     Convert the following weather data into ONE short single-line weather report.
 
     Return ONLY the sentence.
@@ -99,17 +98,18 @@ def weather_node(state: AgentState):
 
     Weather Data:
     {raw_weather}
-    """)
+    """
+    )
 
     return {"result": formatted.content}
 
 
 def datetime_node(state: AgentState):
-
     location = extract_location(state["user_input"])
     result = get_current_datetime.invoke({"location": location})
 
-    formatted = llm.invoke(f"""
+    formatted = llm.invoke(
+        f"""
         Convert the following datetime data into ONE short single-line date-time report.
 
         Return ONLY the sentence.
@@ -118,7 +118,8 @@ def datetime_node(state: AgentState):
 
         User Input: {state["user_input"]}
         Result: {result}
-    """)
+    """
+    )
     return {"result": formatted.content}
 
 
@@ -128,7 +129,6 @@ def wiki_node(state: AgentState):
 
 
 def news_node(state: AgentState):
-
     result = news_search.invoke({"query": state["user_input"], "topic": "news"})
 
     articles = result.get("results", [])
