@@ -187,9 +187,12 @@ builder.add_edge("math_node", END)
 builder.add_edge("chat_node", END)
 builder.add_edge("datetime_node", END)
 
-checkpointer = get_mongo_checkpointer()
 
-graph = builder.compile(checkpointer=checkpointer)
+def build_agent():
+    checkpointer = get_mongo_checkpointer()
+    graph = builder.compile(checkpointer=checkpointer)
+    return graph
+
 
 # -------------------------
 # Run Function
@@ -197,7 +200,8 @@ graph = builder.compile(checkpointer=checkpointer)
 
 
 def run_agent(user_input: str):
-    result = graph.invoke(
+    agent = build_agent()
+    result = agent.invoke(
         {"user_input": user_input}, config={"configurable": {"thread_id": "user_1"}}
     )
     return result["result"]
