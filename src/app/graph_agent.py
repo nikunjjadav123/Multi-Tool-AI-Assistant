@@ -19,12 +19,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-llm = ChatGroq(
-    model_name=os.getenv("LLM_MODEL"),
-    temperature=os.getenv("TEMPERATURE"),
-    streaming=False,
-    callbacks=[StreamingStdOutCallbackHandler()],
-)
+
+def build_llm():
+    return ChatGroq(
+        model_name=os.getenv("LLM_MODEL"),
+        temperature=os.getenv("TEMPERATURE"),
+        streaming=False,
+        callbacks=[StreamingStdOutCallbackHandler()],
+    )
 
 
 # -------------------------
@@ -66,6 +68,7 @@ def chat_node(state: AgentState):
 
     history.append({"role": "user", "content": state["user_input"]})
 
+    llm = build_llm()
     response = llm.invoke(history)
 
     history.append({"role": "assistant", "content": response.content})
@@ -81,6 +84,7 @@ def chat_node(state: AgentState):
 def weather_node(state: AgentState):
     print("Weather Node Executing...")
 
+    llm = build_llm()
     extract = llm.invoke(
         f"Extract only the city name from this sentence: {state['user_input']}. "
     )
@@ -88,6 +92,7 @@ def weather_node(state: AgentState):
     city = extract.content.strip()
     raw_weather = get_current_weather.invoke({"city": city})
 
+    llm = build_llm()
     formatted = llm.invoke(
         f"""
     Convert the following weather data into ONE short single-line weather report.
@@ -108,6 +113,7 @@ def datetime_node(state: AgentState):
     location = extract_location(state["user_input"])
     result = get_current_datetime.invoke({"location": location})
 
+    llm = build_llm()
     formatted = llm.invoke(
         f"""
         Convert the following datetime data into ONE short single-line date-time report.
@@ -154,6 +160,7 @@ def math_node(state: AgentState):
 
     prompt_text = CALCULATOR_PROMPT.format(expr=expr, result=str(raw_result))
 
+    llm = build_llm()
     formatted = llm.invoke(prompt_text)
     return {"result": formatted.content}
 
