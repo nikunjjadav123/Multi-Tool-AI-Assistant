@@ -1,5 +1,5 @@
 from langgraph.checkpoint.mongodb import MongoDBSaver
-from infrastructure.mongo_connection import get_database
+from app.infrastructure.mongo_connection import get_database
 
 
 def get_mongo_checkpointer():
