@@ -1,1 +1,8 @@
 * text=auto
+*.py text
+*.html text
+*.css text
+*.js text
+*.png binary
+*.jpg binary
+*.sqlite3 binary
