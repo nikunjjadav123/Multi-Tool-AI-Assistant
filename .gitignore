@@ -6,3 +6,4 @@ app_old.py
 agent_old.py
 .ruff_cache/
 .ruff_cache
+*.egg-info/
